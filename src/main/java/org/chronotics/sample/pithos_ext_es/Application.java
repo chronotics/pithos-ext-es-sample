@@ -47,7 +47,7 @@ public class Application {
 
     public static void main(String[] args) {
         String strESHost = "192.168.0.56";
-        Integer intESPort = 9219;
+        Integer intESPort = 9319;
         String strESClusterName = "docker-cluster";
 //        String strTransportUsername = "java_client_transport";
 //        String strTransportPassword = "brique0901#$";
@@ -80,12 +80,12 @@ public class Application {
         /*
          Create index and insert array data to index
          */
-        insertArrayDataToES(objESConnection);
+        //insertArrayDataToES(objESConnection);
 
         /*
         Aggregation with custom filter
          */
-        statCustomAgg(objESConnection);
+        //statCustomAgg(objESConnection);
     }
 
     public static void insertArrayDataToES(ElasticService objESConnection) {
@@ -529,7 +529,29 @@ public class Application {
         String strNewNAIndex = "index_na";
 
         //Data can be HashMap or Java Object
-        List<HashMap<String, Object>> lstNAData = CSVUtil.readCSV(strNAFilePath);
+        //List<HashMap<String, Object>> lstNAData = CSVUtil.readCSV(strNAFilePath);
+
+        HashMap<String, Object> curItem = new HashMap<>();
+        List<HashMap<String, Object>> lstSubItem = new ArrayList<>();
+        HashMap<String, Object> curSubItem = new HashMap<>();
+
+        curSubItem.put("sub_field_1", "value_1");
+        curSubItem.put("sub_field_2", "value_2");
+
+        lstSubItem.add(curSubItem);
+
+        curSubItem.put("sub_field_1", "value_1_2");
+        curSubItem.put("sub_field_2", "value_2_2");
+
+        lstSubItem.add(curSubItem);
+
+        curItem.put("field_1", "value X");
+        curItem.put("field_2", lstSubItem);
+
+        List<HashMap<String, Object>> lstNAData = new ArrayList<>();
+        lstNAData.add(curItem);
+        lstNAData.add(curItem);
+
 
         //Create index and insert data to index
         objESConnection.insertBulkData(strNewNAIndex, strType, lstNAData, "", null, true, "");
