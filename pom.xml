@@ -32,7 +32,7 @@
         <dependency>
             <groupId>org.chronotics</groupId>
             <artifactId>pithos-ext-es</artifactId>
-            <version>1.5-SNAPSHOT</version>
+            <version>1.4-SNAPSHOT</version>
         </dependency>
         <!-- Logging -->
         <dependency>
