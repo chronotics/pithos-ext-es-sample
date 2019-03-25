@@ -11,6 +11,7 @@ import org.chronotics.pandora.java.log.LoggerFactory;
 import org.chronotics.pithos.ext.es.adaptor.ElasticService;
 import org.chronotics.pithos.ext.es.model.*;
 import org.chronotics.pithos.ext.es.util.ESFilterOperationConstant;
+import org.chronotics.pithos.ext.es.util.ESPithosConstant;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -45,23 +46,24 @@ public class Application {
     static String strIndex = "thela-data_20181129";
     static String strType = "thela";
 
+    static String strESHost = "192.168.0.56";
+    static Integer intESPort = 9319;
+    static String strESClusterName = "docker-cluster";
+
+    static String strTransportUsername = "";
+    static String strTransportPassword = "";
+
     public static void main(String[] args) {
-        String strESHost = "192.168.0.56";
-        Integer intESPort = 9319;
-        String strESClusterName = "docker-cluster";
+
 //        String strTransportUsername = "java_client_transport";
 //        String strTransportPassword = "brique0901#$";
 
-        String strTransportUsername = "";
-        String strTransportPassword = "";
-
-        ElasticService objESConnection = ElasticService.getInstance(strESClusterName, strESHost, intESPort, strTransportUsername, strTransportPassword);
 
         //prepBulkFieldAction(objESConnection);
         //prepBulkFormatAction(objESConnection);
         //statsMatrix(objESConnection);
         //exportCSV(objESConnection);
-
+        ElasticService objESConnection = ElasticService.getInstance(strESClusterName, strESHost, intESPort, strTransportUsername, strTransportPassword);
 
 
         //statIndex(objESConnection);
@@ -75,7 +77,8 @@ public class Application {
         /*
          Create index and insert data to index
          */
-        createIndexAndBulkInsert(objESConnection);
+        //createIndexAndBulkInsert(objESConnection);
+        testTemplateMappingWithDate(objESConnection);
 
         /*
          Create index and insert array data to index
@@ -521,6 +524,41 @@ public class Application {
         ESMatrixStatModel objMatrixStat = objESConnection.statsMatrix(strIndex, strType, objAllRequest);
 
         log.info("INFO: " + objMatrixStat.toString());
+    }
+
+    public static void testTemplateMappingWithDate(ElasticService objESConnetion) {
+        String strTestIndex = "index_test_date";
+        String strTestType = "thela";
+
+        HashMap<String, String> mapData = new HashMap<>();
+        mapData.put("date_field", "2019-03-23 03:24:56.0");
+
+        List<HashMap<String, String>> lstData = new ArrayList<>();
+        lstData.add(mapData);
+
+        Map<String, Map<String, String>> mapPredefinedDataType = new HashMap<>();
+        Map<String, String> mapCurFieldType = new HashMap<>();
+        mapCurFieldType.put(ESPithosConstant.PREDEFINED_DATA_TYPE, ".date");
+        mapCurFieldType.put(ESPithosConstant.PREDEFINED_DATA_FORMAT, "yyyy-MM-dd HH:mm:ss.SSS");
+        mapPredefinedDataType.put("date_field", mapCurFieldType);
+
+        List<String> lstCount = new ArrayList<>();
+
+        lstCount.add("1");
+        lstCount.add("2");
+        lstCount.add("3");
+        lstCount.add("4");
+        lstCount.add("5");
+
+        lstCount.parallelStream().forEach(curStr -> {
+            ElasticService objNewESConnection = ElasticService.getInstance(strESClusterName, strESHost, intESPort, strTransportUsername, strTransportPassword);
+
+            log.info("TEST===>ESConnection: " + objNewESConnection);
+            objNewESConnection.insertBulkHashData(strTestIndex, strTestType, lstData, "", null, true, "", mapPredefinedDataType);
+        });
+
+        //String strIndex, String strType, List<?> lstData, String strFieldDate, List<ESFieldModel> lstFieldModel,
+        //                                      Boolean bIsUsedAutoID, String strDocIdPrefix, Map<String, Map<String, String>> mapPredefinedDataType
     }
 
     public static void createIndexAndBulkInsert(ElasticService objESConnection) {
